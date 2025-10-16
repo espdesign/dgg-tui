@@ -14,10 +14,18 @@ class WebSocketClient:
             self.websocket = await websockets.connect(
                 self.uri, additional_headers=self.headers, ping_interval=None
             )
-            self.messages.append(f"Connected to {self.uri}")
+            self.messages.append({
+                "nick": "INFO",
+                "data": f"Connected to {self.uri}",
+                "roles": [],
+            })
             return True
         except (websockets.exceptions.ConnectionClosedError, ConnectionRefusedError) as e:
-            self.messages.append(f"Failed to connect to {self.uri}: {e}")
+            self.messages.append({
+                "nick": "INFO",
+                "data": f"Failed to connect to {self.uri}: {e}",
+                "roles": [],
+            })
             return False
 
     async def receive_message(self):
@@ -28,7 +36,12 @@ class WebSocketClient:
             try:
                 data = json.loads(payload)
                 if event_name == "MSG":
-                    self.messages.append(f"{data['nick']}: {data['data']}")
+                    self.messages.append({
+                        "nick": data["nick"],
+                        "data": data["data"],
+                        "roles": data["roles"],
+                        "features": data["features"],
+                    })
                 elif event_name == "NAMES":
                     pass
                 else:
@@ -36,7 +49,11 @@ class WebSocketClient:
             except json.JSONDecodeError:
                 self.messages.append(message)
         except websockets.exceptions.ConnectionClosed:
-            self.messages.append("Connection closed.")
+            self.messages.append({
+                "nick": "INFO",
+                "data": "Connection closed.",
+                "roles": [],
+            })
 
     async def send_message(self, message):
         await self.websocket.send(message)
