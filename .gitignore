@@ -9,3 +9,13 @@ devenv.local.nix
 .pre-commit-config.yaml
 # env file
 .env
+.envrc
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
